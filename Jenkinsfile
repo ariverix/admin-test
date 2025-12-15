@@ -74,28 +74,16 @@ pipeline {
                 sh 'docker-compose build'
             }
         }
-        
-        stage('Deploy') {
-            steps {
-                echo 'Запуск сервисов через Docker Compose...'
-                sh 'docker-compose down || true'
-                sh 'docker-compose up -d'
-            }
-        }
     }
-    
+
     post {
         success {
-            echo 'Сборка успешно завершена!'
-            echo 'Сервисы запущены и доступны:'
-            echo '- demo-rest: http://localhost:8080'
-            echo '- Prometheus: http://localhost:9090'
-            echo '- Grafana: http://localhost:3000'
-            echo '- RabbitMQ: http://localhost:15672'
-            echo '- Zipkin: http://localhost:9411'
+            echo '✅ Сборка успешно завершена!'
+            echo 'Docker образы созданы.'
+            echo 'Для запуска сервисов выполните: docker-compose up -d'
         }
         failure {
-            echo 'Сборка завершилась с ошибкой'
+            echo '❌ Сборка завершилась с ошибкой'
         }
         always {
             echo 'Очистка рабочего пространства...'
