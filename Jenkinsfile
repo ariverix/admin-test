@@ -69,18 +69,12 @@ pipeline {
         }
     }
 
-    post {
-        success {
-            echo '✅ Сборка успешно завершена!'
-            echo 'Все Maven проекты собраны.'
-            echo 'Docker образы и сервисы запущены через docker-compose.'
-        }
-        failure {
-            echo '❌ Сборка завершилась с ошибкой'
-        }
-        always {
-            echo 'Очистка рабочего пространства...'
-            cleanWs()
-        }
+post {
+    success {
+        echo '✅ Сборка успешно завершена!'
+        echo 'Все Maven проекты собраны.'
+    }
+    failure {
+        echo '❌ Сборка завершилась с ошибкой'
     }
 }
