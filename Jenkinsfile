@@ -67,20 +67,13 @@ pipeline {
                 }
             }
         }
-        
-        stage('Build Docker Images') {
-            steps {
-                echo 'Сборка Docker образов...'
-                sh 'docker-compose build'
-            }
-        }
     }
 
     post {
         success {
             echo '✅ Сборка успешно завершена!'
-            echo 'Docker образы созданы.'
-            echo 'Для запуска сервисов выполните: docker-compose up -d'
+            echo 'Все Maven проекты собраны.'
+            echo 'Docker образы и сервисы запущены через docker-compose.'
         }
         failure {
             echo '❌ Сборка завершилась с ошибкой'
