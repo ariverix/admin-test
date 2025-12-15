@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>WebSocket Demo</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        #messages { border: 1px solid #ccc; padding: 10px; height: 300px; overflow-y: scroll; }
+        .log { color: gray; font-size: 0.8em; }
+        .msg { color: blue; font-weight: bold; }
+    </style>
+</head>
+<body>
+<h2>Live Notifications</h2>
+<div id="status">Status: Disconnected</div>
+<div id="messages"></div>
+
+<script>
+    const statusDiv = document.getElementById('status');
+    const messagesDiv = document.getElementById('messages');
+
+    let socket = null;
+    let reconnectAttempts = 0;
+    let reconnectTimer = null;
+    const MAX_RECONNECT_DELAY = 30000; // макс. 30 сек между попытками
+
+    function connect() {
+        // Защита от повторного вызова
+        if (socket && socket.readyState === WebSocket.CONNECTING) {
+            return;
+        }
+
+        // Очищаем предыдущий таймер
+        if (reconnectTimer) {
+            clearTimeout(reconnectTimer);
+            reconnectTimer = null;
+        }
+
+        // ws:// для http, wss:// для https (продакшен)
+        const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+        socket = new WebSocket(`${protocol}//localhost:8080/ws/notifications`);
+
+        socket.onopen = function() {
+            reconnectAttempts = 0; // сброс счетчика при успешном подключении
+            statusDiv.textContent = 'Status: Connected';
+            statusDiv.style.color = 'green';
+            log('Соединение установлено');
+        };
+
+        socket.onmessage = function(event) {
+            log('Получено: ' + event.data, 'msg');
+        };
+
+        socket.onclose = function(event) {
+            statusDiv.textContent = 'Status: Disconnected';
+            statusDiv.style.color = 'red';
+
+            const reason = event.wasClean
+                ? `закрыто чисто, код=${event.code}`
+                : 'обрыв соединения';
+            log(`Отключение: ${reason}`);
+
+            scheduleReconnect();
+        };
+
+        socket.onerror = function() {
+            // WebSocket error event не содержит деталей (по соображениям безопасности)
+            log('Ошибка соединения');
+        };
+    }
+
+    function scheduleReconnect() {
+        // Exponential backoff: 1s, 2s, 4s, 8s... до MAX_RECONNECT_DELAY
+        const delay = Math.min(1000 * Math.pow(2, reconnectAttempts), MAX_RECONNECT_DELAY);
+        reconnectAttempts++;
+
+        log(`Переподключение через ${delay/1000} сек (попытка ${reconnectAttempts})...`);
+        reconnectTimer = setTimeout(connect, delay);
+    }
+
+    function log(text, type = 'log') {
+        const div = document.createElement('div');
+        div.className = type;
+        div.textContent = `[${new Date().toLocaleTimeString()}] ${text}`;
+        messagesDiv.appendChild(div);
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    // Запуск
+    connect();
+</script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "grpc.demo";
+
+service AnalyticsService {
+  rpc CalculateUserRating (UserRatingRequest) returns (UserRatingResponse) {}
+}
+
+message UserRatingRequest {
+  int64 user_id = 1;
+  string category = 2;
+}
+
+message UserRatingResponse {
+  int64 user_id = 1;
+  int32 rating_score = 2;
+  string verdict = 3;
+}
